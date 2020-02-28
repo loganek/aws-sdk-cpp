@@ -92,16 +92,18 @@ if(ENABLE_CURL_CLIENT)
     file(GLOB HTTP_CURL_CLIENT_HEADERS "include/aws/core/http/curl/*.h")
     file(GLOB HTTP_CURL_CLIENT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/source/http/curl/*.cpp")
     set(CMAKE_REQUIRED_LIBRARIES ${CURL_LIBRARIES})
-    check_c_source_runs("
-    #include <curl/curl.h>
-    int main() {
-    CURL* handle = curl_easy_init();
-    return curl_easy_setopt(handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0); }" CURL_HAS_H2)
-    check_c_source_runs("
-    #include <curl/curl.h>
-    int main() {
-    CURL* handle = curl_easy_init();
-    return curl_easy_setopt(handle, CURLOPT_PROXY_SSLCERT, \"client.pem\"); }" CURL_HAS_TLS_PROXY)
+    if (NOT FORCE_DISABLE_HTTP2)
+        check_c_source_runs("
+        #include <curl/curl.h>
+        int main() {
+        CURL* handle = curl_easy_init();
+        return curl_easy_setopt(handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0); }" CURL_HAS_H2)
+        check_c_source_runs("
+        #include <curl/curl.h>
+        int main() {
+        CURL* handle = curl_easy_init();
+        return curl_easy_setopt(handle, CURLOPT_PROXY_SSLCERT, \"client.pem\"); }" CURL_HAS_TLS_PROXY)
+    endif()
     unset(CMAKE_REQUIRED_LIBRARIES)
 elseif(ENABLE_WINDOWS_CLIENT)
     # NOTE: HTTP/2 is not supported when using IXML_HTTP_REQUEST_2
